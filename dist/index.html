@@ -268,6 +268,44 @@
         color: var(--accent);
       }
 
+      .marker-guide {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .marker-guide-card {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 14px;
+        align-items: center;
+        padding: 12px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .marker-thumb {
+        width: 120px;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        object-fit: cover;
+        background: #fff;
+      }
+
+      .marker-copy strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .marker-copy span {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
       .status {
         margin: 16px 0 0;
         padding: 12px 14px;
@@ -372,6 +410,42 @@
       .ar-hud {
         position: fixed;
         top: 16px;
+
+              .debug-pill {
+                width: fit-content;
+                max-width: min(100%, 92vw);
+                min-height: 40px;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 0 14px;
+                border-radius: 999px;
+                background: rgba(7, 16, 27, 0.82);
+                border: 1px solid rgba(125, 255, 214, 0.25);
+                box-shadow: var(--shadow);
+                backdrop-filter: blur(12px);
+                color: var(--text);
+                pointer-events: none;
+              }
+
+              .debug-pill::before {
+                content: "";
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #ff7a7a;
+                box-shadow: 0 0 14px rgba(255, 122, 122, 0.55);
+              }
+
+              .debug-pill.is-found::before {
+                background: #7dffd6;
+                box-shadow: 0 0 14px rgba(125, 255, 214, 0.6);
+              }
+
+              .debug-text {
+                font-size: 13px;
+                line-height: 1.4;
+              }
         left: 16px;
         right: 16px;
         z-index: 20;
@@ -597,6 +671,8 @@
         const sceneSlot = document.getElementById("ar-scene-slot");
         const activeText = document.getElementById("active-text");
         const activeSource = document.getElementById("active-source");
+        const debugPill = document.getElementById("debug-pill");
+        const debugText = document.getElementById("debug-text");
         const previewText = document.getElementById("preview-text");
         const launchText = document.getElementById("launch-text");
         const markerStatus = document.getElementById("marker-status");
@@ -667,14 +743,21 @@
             return;
           }
 
+          debugPill.classList.remove("is-found");
+          debugText.textContent = "マーカー未検出: 下の見本と同じ Hiro マーカー全体を中央に収めてください。";
+
           marker.addEventListener("markerFound", function () {
             markerStatus.textContent = "マーカー検出中";
             markerHint.textContent = "立体文字をその場で回転表示しています。距離を少し離すと安定します。";
+            debugPill.classList.add("is-found");
+            debugText.textContent = "マーカー検出: 立体文字の表示中です。";
           });
 
           marker.addEventListener("markerLost", function () {
             markerStatus.textContent = "マーカー待機中";
             markerHint.textContent = "Hiroマーカーをカメラ中央にゆっくり合わせてください。";
+            debugPill.classList.remove("is-found");
+            debugText.textContent = "マーカー未検出: Hiro 全体が入る距離まで少し離してください。";
           });
         }
 
@@ -711,6 +794,8 @@
           activeSource.textContent = sourceLabel;
           markerStatus.textContent = "マーカー待機中";
           markerHint.textContent = "Hiroマーカーを映すと、設定した文字の立体表示が始まります。";
+          debugPill.classList.remove("is-found");
+          debugText.textContent = "マーカー未検出: 下の見本と同じ Hiro マーカーを映してください。";
 
           sceneSlot.appendChild(createArScene(textValue));
           document.body.classList.add("ar-active");
@@ -821,9 +906,20 @@
               </div>
             </div>
 
+              <div class="marker-guide-card">
+                <img class="marker-thumb" src="assets/HIRO.jpg" alt="Hiro marker" />
+                <div class="marker-copy">
+                  <strong>この Hiro マーカーを使ってください</strong>
+                  <span>黒い外枠まで全部映るように、別端末表示か紙印刷で中央に合わせると認識しやすいです。</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="marker-guide">
             <div id="status-box" class="status">
               <strong id="status-title">準備完了</strong>
               <div id="status-text">ARを開始するとカメラが起動し、Hiroマーカー上に立体文字を表示します。</div>
+            </div>
             </div>
 
             <div class="controls">
@@ -846,6 +942,10 @@
 
       <section id="ar-stage" class="ar-stage hidden">
         <div class="ar-hud">
+          <div id="debug-pill" class="debug-pill">
+            <span id="debug-text" class="debug-text">マーカー未検出: 下の見本と同じ Hiro マーカーを映してください。</span>
+          </div>
+
           <div class="ar-hud-card">
             <p id="marker-hint" class="sr-only">Hiroマーカーを映すと、設定した文字の立体表示が始まります。</p>
             <div class="tag-row">

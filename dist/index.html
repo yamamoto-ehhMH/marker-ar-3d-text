@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Simple Hiro Marker AR</title>
     <style>
-      :root {
-        --app-h: 100dvh;
-      }
-
       html,
       body {
         margin: 0;
+        padding: 0;
         width: 100%;
-        height: var(--app-h);
+        height: 100%;
         overflow: hidden;
         background: #000;
       }
@@ -36,10 +33,8 @@
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        width: 100% !important;
-        height: var(--app-h) !important;
-        min-width: 100% !important;
-        min-height: var(--app-h) !important;
+        width: 100vw !important;
+        height: 100vh !important;
         max-width: none !important;
         max-height: none !important;
       }
@@ -50,7 +45,7 @@
         object-fit: cover !important;
         object-position: center center !important;
         background: #000 !important;
-        z-index: 0 !important;
+        z-index: -1 !important;
       }
 
       .a-canvas,
@@ -59,6 +54,10 @@
         background: transparent !important;
         z-index: 1 !important;
         display: block !important;
+      }
+
+      a-scene {
+        inset: 0 !important;
       }
     </style>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -109,48 +108,13 @@
         }
       });
 
-      function syncViewportSize() {
-        const width = Math.max(window.innerWidth || 1, 1);
-        const height = Math.max(window.innerHeight || 1, 1);
-        document.documentElement.style.setProperty("--app-h", height + "px");
-
-        const targets = document.querySelectorAll(
-          "video, .arjs-video, #arjs-video, .a-canvas, a-scene, canvas"
-        );
-        targets.forEach((el) => {
-          el.style.width = width + "px";
-          el.style.height = height + "px";
-          el.style.minWidth = width + "px";
-          el.style.minHeight = height + "px";
-          el.style.left = "0px";
-          el.style.top = "0px";
-        });
-      }
-
-      window.addEventListener("resize", () => {
-        syncViewportSize();
-        setTimeout(syncViewportSize, 120);
-      }, { passive: true });
-
-      window.addEventListener("orientationchange", () => {
-        syncViewportSize();
-        setTimeout(syncViewportSize, 250);
-        setTimeout(syncViewportSize, 700);
-      }, { passive: true });
-
-      document.addEventListener("DOMContentLoaded", () => {
-        syncViewportSize();
-        setTimeout(syncViewportSize, 150);
-        setTimeout(syncViewportSize, 500);
-      });
     </script>
   </head>
   <body>
     <a-scene
-      embedded
       vr-mode-ui="enabled: false"
       renderer="alpha: true; antialias: true; precision: mediump"
-      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono; facingMode: environment;"
+      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; facingMode: environment;"
     >
       <a-assets timeout="20000">
         <a-asset-item id="candleModel" src="assets/GlassHurricaneCandleHolder.glb"></a-asset-item>

@@ -85,6 +85,10 @@
       renderer="alpha: true; antialias: true; precision: mediump"
       arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
     >
+      <a-assets timeout="20000">
+        <a-asset-item id="candleModel" src="assets/GlassHurricaneCandleHolder.glb"></a-asset-item>
+      </a-assets>
+
       <a-marker
         type="pattern"
         url="assets/patt.hiro"
@@ -113,10 +117,11 @@
         ></a-box>
 
         <a-entity
-          block-text="value: HELLO; color: #ffd76a; depthLayers: 9"
-          position="0 0.09 0"
-          scale="-10 -10 10"
-          rotation="-90 180 0"
+          gltf-model="#candleModel"
+          position="0 0.08 0"
+          scale="0.18 0.18 0.18"
+          rotation="0 0 0"
+          animation-mixer
         ></a-entity>
       </a-marker>
       <a-entity camera></a-entity>

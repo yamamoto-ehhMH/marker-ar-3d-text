@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marker AR 3D Text</title>
+    <style>
+      :root {
+        --bg1: #101825;
+        --bg2: #1f2d3f;
+        --accent: #ffd166;
+        --text: #f4f7fb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at 15% 20%, #2b3f56 0%, var(--bg1) 45%),
+          linear-gradient(120deg, var(--bg1), var(--bg2));
+        min-height: 100vh;
+      }
+
+      .hud {
+        position: fixed;
+        inset: 0 auto auto 0;
+        padding: 14px 16px;
+        z-index: 10;
+        width: min(94vw, 460px);
+        backdrop-filter: blur(6px);
+        background: rgba(14, 20, 30, 0.58);
+        border-bottom-right-radius: 14px;
+      }
+
+      .hud h1 {
+        margin: 0 0 6px;
+        font-size: 18px;
+        color: var(--accent);
+      }
+
+      .hud p {
+        margin: 0;
+        line-height: 1.55;
+        font-size: 14px;
+      }
+
+      .chip {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 8px;
+        border: 1px solid rgba(255, 209, 102, 0.35);
+        border-radius: 999px;
+        font-size: 12px;
+      }
+
+      .a-enter-vr-button {
+        display: none !important;
+      }
+
+      @media (max-width: 600px) {
+        .hud h1 {
+          font-size: 16px;
+        }
+      }
+    </style>
+
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/geometries/TextGeometry.js"></script>
+
+    <script>
+      AFRAME.registerComponent("extruded-text", {
+        schema: {
+          value: { type: "string", default: "HELLO AR" },
+          size: { type: "number", default: 0.24 },
+          height: { type: "number", default: 0.08 },
+          color: { type: "color", default: "#ffd166" }
+        },
+        init: function () {
+          const data = this.data;
+          const el = this.el;
+          const loader = new THREE.FontLoader();
+
+          loader.load(
+            "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/fonts/helvetiker_bold.typeface.json",
+            function (font) {
+              const geometry = new THREE.TextGeometry(data.value, {
+                font,
+                size: data.size,
+                height: data.height,
+                curveSegments: 8,
+                bevelEnabled: true,
+                bevelThickness: 0.01,
+                bevelSize: 0.008,
+                bevelOffset: 0,
+                bevelSegments: 4
+              });
+
+              geometry.computeBoundingBox();
+              const box = geometry.boundingBox;
+              const xMid = -0.5 * (box.max.x - box.min.x);
+              geometry.translate(xMid, 0, 0);
+
+              const material = new THREE.MeshStandardMaterial({
+                color: data.color,
+                metalness: 0.45,
+                roughness: 0.2
+              });
+
+              const mesh = new THREE.Mesh(geometry, material);
+              el.setObject3D("mesh", mesh);
+            }
+          );
+        },
+        remove: function () {
+          this.el.removeObject3D("mesh");
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <section class="hud">
+      <h1>Marker AR 立体文字デモ</h1>
+      <p>
+        Hiroマーカーをカメラに映すと、立体文字が表示されます。
+        PCはWebカメラ、スマホは背面カメラ利用を推奨します。
+      </p>
+      <span class="chip">Marker: Hiro / Text: YAMAMOTO</span>
+    </section>
+
+    <a-scene
+      embedded
+      vr-mode-ui="enabled: false"
+      renderer="logarithmicDepthBuffer: true; precision: mediump;"
+      arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+    >
+      <a-light type="ambient" intensity="0.75"></a-light>
+      <a-light type="directional" intensity="1.2" position="0 1 1"></a-light>
+
+      <a-marker preset="hiro">
+        <a-entity
+          extruded-text="value: YAMAMOTO; size: 0.23; height: 0.09; color: #ffd166"
+          position="0 0.2 0"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear"
+        ></a-entity>
+
+        <a-ring
+          position="0 0.01 0"
+          rotation="-90 0 0"
+          radius-inner="0.35"
+          radius-outer="0.42"
+          color="#7bdff2"
+        ></a-ring>
+      </a-marker>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>

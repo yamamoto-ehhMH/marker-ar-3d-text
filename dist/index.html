@@ -45,35 +45,39 @@
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
     <script>
-      AFRAME.registerComponent("block-text", {
+      AFRAME.registerComponent("fit-model", {
         schema: {
-          value: { type: "string", default: "HELLO" },
-          color: { type: "color", default: "#ffd76a" },
-          depthLayers: { type: "int", default: 8 }
+          targetSize: { type: "number", default: 0.8 },
+          yOffset: { type: "number", default: 0.02 }
         },
         init: function () {
-          const root = this.el;
-          const value = this.data.value;
-          const layerCount = Math.max(3, this.data.depthLayers);
+          this.el.addEventListener("model-loaded", () => {
+            const object3D = this.el.getObject3D("mesh");
+            if (!object3D) {
+              return;
+            }
 
-          for (let i = 0; i < layerCount; i += 1) {
-            const layer = document.createElement("a-entity");
-            const isFront = i === layerCount - 1;
-            const zOffset = -0.07 + i * 0.01;
-            layer.setAttribute(
-              "text",
-              [
-                "value: " + value,
-                "align: center",
-                "anchor: center",
-                "baseline: center",
-                "width: 2.25",
-                "color: " + (isFront ? this.data.color : "#7a5b1e")
-              ].join("; ")
-            );
-            layer.setAttribute("position", "0 0 " + zOffset.toFixed(3));
-            root.appendChild(layer);
-          }
+            const box = new THREE.Box3().setFromObject(object3D);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            const maxAxis = Math.max(size.x, size.y, size.z);
+            if (!maxAxis || !isFinite(maxAxis)) {
+              return;
+            }
+
+            const scale = this.data.targetSize / maxAxis;
+            object3D.scale.set(scale, scale, scale);
+
+            const fitted = new THREE.Box3().setFromObject(object3D);
+            const center = new THREE.Vector3();
+            fitted.getCenter(center);
+            object3D.position.sub(center);
+
+            const grounded = new THREE.Box3().setFromObject(object3D);
+            object3D.position.y -= grounded.min.y;
+
+            this.el.object3D.position.y = this.data.yOffset;
+          });
         }
       });
     </script>
@@ -89,6 +93,9 @@
         <a-asset-item id="candleModel" src="assets/GlassHurricaneCandleHolder.glb"></a-asset-item>
       </a-assets>
 
+      <a-entity light="type: ambient; intensity: 1.1; color: #ffffff"></a-entity>
+      <a-entity light="type: directional; intensity: 0.9; color: #ffffff" position="1 2 1"></a-entity>
+
       <a-marker
         type="pattern"
         url="assets/patt.hiro"
@@ -98,30 +105,12 @@
         smoothTolerance="0.01"
         smoothThreshold="5"
       >
-        <a-plane
-          position="0 0.001 0"
-          rotation="-90 0 0"
-          width="1.24"
-          height="1.24"
-          color="#000000"
-          material="side: double; opacity: 1"
-        ></a-plane>
-
-        <a-box
-          position="0 0.032 0"
-          width="1.24"
-          height="0.064"
-          depth="1.24"
-          color="#050505"
-          material="metalness: 0.2; roughness: 0.8"
-        ></a-box>
-
         <a-entity
           gltf-model="#candleModel"
-          position="0 0.08 0"
-          scale="0.18 0.18 0.18"
+          fit-model="targetSize: 0.95; yOffset: 0.01"
+          position="0 0.01 0"
+          scale="1 1 1"
           rotation="0 0 0"
-          animation-mixer
         ></a-entity>
       </a-marker>
       <a-entity camera></a-entity>

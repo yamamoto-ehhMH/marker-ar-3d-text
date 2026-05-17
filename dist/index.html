@@ -684,17 +684,18 @@
           scene.setAttribute("embedded", "");
           scene.setAttribute("vr-mode-ui", "enabled: false");
           scene.setAttribute("renderer", "alpha: true; logarithmicDepthBuffer: true; precision: mediump; colorManagement: true;");
-          scene.setAttribute("arjs", "trackingMethod: best; sourceType: webcam; debugUIEnabled: false;");
+          scene.setAttribute("arjs", "trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono;");
           scene.setAttribute("style", "background: transparent;");
           scene.innerHTML = [
             '<a-light type="ambient" intensity="0.9"></a-light>',
             '<a-light type="directional" intensity="1.1" position="0 1 1"></a-light>',
             '<a-light type="point" intensity="0.65" position="0 1.4 -0.4" color="#7dffd6"></a-light>',
-            '<a-marker preset="hiro">',
-            '  <a-entity id="marker-text" extruded-text="value: ' + value + '; size: ' + textSize + '; depth: 0.09; color: #ffb86c" position="0 0.24 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 8500; easing: linear"></a-entity>',
+            '<a-marker type="pattern" url="assets/patt.hiro" emitevents="true" smooth="true" smoothCount="8" smoothTolerance="0.01" smoothThreshold="2">',
+            '  <a-plane position="0 0.01 0" rotation="-90 0 0" width="1" height="1" color="#7dffd6" material="opacity: 0.12; side: double"></a-plane>',
+            '  <a-entity id="marker-text" extruded-text="value: ' + value + '; size: ' + textSize + '; depth: 0.09; color: #ffb86c" position="0 0.28 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 8500; easing: linear"></a-entity>',
             '  <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="0.34" radius-outer="0.43" color="#7dffd6" material="opacity: 0.95"></a-ring>',
-            '  <a-cylinder position="0 0.03 0" radius="0.09" height="0.05" color="#10212b" material="metalness: 0.3; roughness: 0.5"></a-cylinder>',
-            '  <a-box position="0 0.11 0" depth="0.12" height="0.12" width="0.12" rotation="20 35 0" color="#7dffd6" material="opacity: 0.18"></a-box>',
+            '  <a-cylinder position="0 0.04 0" radius="0.09" height="0.08" color="#10212b" material="metalness: 0.3; roughness: 0.5"></a-cylinder>',
+            '  <a-box position="0 0.14 0" depth="0.16" height="0.16" width="0.16" rotation="20 35 0" color="#7dffd6" material="opacity: 0.24"></a-box>',
             '</a-marker>',
             '<a-entity camera></a-entity>'
           ].join("");

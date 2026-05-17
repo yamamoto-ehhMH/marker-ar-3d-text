@@ -44,6 +44,39 @@
     </style>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+    <script>
+      AFRAME.registerComponent("block-text", {
+        schema: {
+          value: { type: "string", default: "HELLO" },
+          color: { type: "color", default: "#ffd76a" },
+          depthLayers: { type: "int", default: 8 }
+        },
+        init: function () {
+          const root = this.el;
+          const value = this.data.value;
+          const layerCount = Math.max(3, this.data.depthLayers);
+
+          for (let i = 0; i < layerCount; i += 1) {
+            const layer = document.createElement("a-entity");
+            const isFront = i === layerCount - 1;
+            const zOffset = -0.07 + i * 0.01;
+            layer.setAttribute(
+              "text",
+              [
+                "value: " + value,
+                "align: center",
+                "anchor: center",
+                "baseline: center",
+                "width: 2.25",
+                "color: " + (isFront ? this.data.color : "#7a5b1e")
+              ].join("; ")
+            );
+            layer.setAttribute("position", "0 0 " + zOffset.toFixed(3));
+            root.appendChild(layer);
+          }
+        }
+      });
+    </script>
   </head>
   <body>
     <a-scene
@@ -53,7 +86,21 @@
       arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
     >
       <a-marker type="pattern" url="assets/patt.hiro" emitevents="true">
-        <a-box position="0 0.25 0" depth="0.2" height="0.2" width="0.2" color="#00ffc3"></a-box>
+        <a-box
+          position="0 0.05 0"
+          width="1"
+          height="0.1"
+          depth="1"
+          color="#050505"
+          material="metalness: 0.2; roughness: 0.8"
+        ></a-box>
+
+        <a-entity
+          block-text="value: HELLO; color: #ffd76a; depthLayers: 9"
+          position="0 0.07 0"
+          rotation="0 0 0"
+          animation="property: position; from: 0 0.07 0; to: 0 0.34 0; dur: 1200; easing: easeOutCubic; loop: false; startEvents: markerFound"
+        ></a-entity>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>

@@ -48,7 +48,10 @@
       AFRAME.registerComponent("fit-model", {
         schema: {
           targetSize: { type: "number", default: 0.8 },
-          yOffset: { type: "number", default: 0.02 }
+          yOffset: { type: "number", default: 0.02 },
+          rotX: { type: "number", default: 0 },
+          rotY: { type: "number", default: 0 },
+          rotZ: { type: "number", default: 0 }
         },
         init: function () {
           this.el.addEventListener("model-loaded", () => {
@@ -56,6 +59,12 @@
             if (!object3D) {
               return;
             }
+
+            object3D.rotation.set(
+              THREE.MathUtils.degToRad(this.data.rotX),
+              THREE.MathUtils.degToRad(this.data.rotY),
+              THREE.MathUtils.degToRad(this.data.rotZ)
+            );
 
             const box = new THREE.Box3().setFromObject(object3D);
             const size = new THREE.Vector3();
@@ -107,7 +116,7 @@
       >
         <a-entity
           gltf-model="#candleModel"
-          fit-model="targetSize: 0.95; yOffset: 0.01"
+          fit-model="targetSize: 0.95; yOffset: 0.01; rotX: 180"
           position="0 0.01 0"
           scale="1 1 1"
           rotation="0 0 0"

@@ -86,21 +86,30 @@
       arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
     >
       <a-marker type="pattern" url="assets/patt.hiro" emitevents="true">
+        <a-plane
+          position="0 0.001 0"
+          rotation="-90 0 0"
+          width="1.24"
+          height="1.24"
+          color="#000000"
+          material="side: double; opacity: 1"
+        ></a-plane>
+
         <a-box
-          position="0 0.05 0"
-          width="1"
-          height="0.1"
-          depth="1"
+          position="0 0.032 0"
+          width="1.24"
+          height="0.064"
+          depth="1.24"
           color="#050505"
           material="metalness: 0.2; roughness: 0.8"
         ></a-box>
 
         <a-entity
           block-text="value: HELLO; color: #ffd76a; depthLayers: 9"
-          position="0 0.07 0"
-          scale="5 5 5"
-          rotation="0 0 0"
-          animation="property: position; from: 0 0.07 0; to: 0 0.34 0; dur: 1200; easing: easeOutCubic; loop: false; startEvents: markerFound"
+          position="0 0.09 0"
+          scale="10 10 10"
+          rotation="0 180 0"
+          animation="property: position; from: 0 0.09 0; to: 0 0.42 0; dur: 1200; easing: easeOutCubic; loop: false; startEvents: markerFound"
         ></a-entity>
       </a-marker>
       <a-entity camera></a-entity>

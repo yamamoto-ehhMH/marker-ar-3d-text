@@ -455,63 +455,65 @@
     </style>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/FontLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/geometries/TextGeometry.js"></script>
     <script>
       AFRAME.registerComponent("extruded-text", {
         schema: {
           value: { type: "string", default: "AR TEXT" },
           size: { type: "number", default: 0.22 },
-          height: { type: "number", default: 0.08 },
+          depth: { type: "number", default: 0.08 },
           color: { type: "color", default: "#ffb86c" }
         },
         init: function () {
+          this.renderText();
+        },
+        update: function () {
+          this.renderText();
+        },
+        renderText: function () {
           const data = this.data;
           const el = this.el;
-          const loader = new THREE.FontLoader();
+          const layerCount = 10;
+          const layerDepth = data.depth / layerCount;
+          const safeValue = data.value.replace(/;/g, "").trim() || "AR TEXT";
 
-          loader.load(
-            "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/fonts/helvetiker_bold.typeface.json",
-            function (font) {
-              const geometry = new THREE.TextGeometry(data.value, {
-                font: font,
-                size: data.size,
-                height: data.height,
-                curveSegments: 8,
-                bevelEnabled: true,
-                bevelThickness: 0.01,
-                bevelSize: 0.008,
-                bevelOffset: 0,
-                bevelSegments: 4
-              });
-
-              geometry.computeBoundingBox();
-              const box = geometry.boundingBox;
-              const xMid = -0.5 * (box.max.x - box.min.x);
-              geometry.translate(xMid, 0, 0);
-
-              const material = new THREE.MeshStandardMaterial({
-                color: data.color,
-                metalness: 0.42,
-                roughness: 0.18,
-                emissive: new THREE.Color("#241507"),
-                emissiveIntensity: 0.5
-              });
-
-              el.setObject3D("mesh", new THREE.Mesh(geometry, material));
-            }
-          );
-        },
-        update: function (oldData) {
-          if (!oldData || oldData.value === undefined || oldData.value === this.data.value) {
-            return;
+          while (el.firstChild) {
+            el.removeChild(el.firstChild);
           }
 
-          this.remove();
-          this.init();
+          for (let index = 0; index < layerCount; index += 1) {
+            const layer = document.createElement("a-entity");
+            const depthOffset = -data.depth + layerDepth * index;
+            const tone = index === layerCount - 1 ? data.color : "#6d3d10";
+            const opacity = index === layerCount - 1 ? 1 : 0.92;
+
+            layer.setAttribute(
+              "text",
+              [
+                "value: " + safeValue,
+                "align: center",
+                "anchor: center",
+                "baseline: center",
+                "color: " + tone,
+                "width: " + Math.max(3.2, safeValue.length * 0.45)
+              ].join("; ")
+            );
+            layer.setAttribute("position", "0 0 " + depthOffset.toFixed(3));
+            layer.setAttribute("scale", data.size + " " + data.size + " 1");
+            layer.setAttribute("material", "transparent: true; opacity: " + opacity + "; side: double");
+            el.appendChild(layer);
+          }
+
+          const glow = document.createElement("a-plane");
+          glow.setAttribute("width", Math.max(1.4, safeValue.length * data.size * 0.42));
+          glow.setAttribute("height", Math.max(0.48, data.size * 1.6));
+          glow.setAttribute("position", "0 0 " + (-data.depth - 0.02).toFixed(3));
+          glow.setAttribute("material", "color: #ffb86c; shader: flat; transparent: true; opacity: 0.12; side: double");
+          el.appendChild(glow);
         },
         remove: function () {
-          this.el.removeObject3D("mesh");
+          while (this.el.firstChild) {
+            this.el.removeChild(this.el.firstChild);
+          }
         }
       });
 
@@ -533,7 +535,9 @@
         const launchText = document.getElementById("launch-text");
         const markerStatus = document.getElementById("marker-status");
         const markerHint = document.getElementById("marker-hint");
-        const defaultText = sanitizeText(params.get("text") || textInput.value || "YAMAMOTO");
+        const paramText = params.get("text");
+        const defaultText = sanitizeText(paramText || "YAMAMOTO");
+        let hasManualOverride = false;
 
         function setStatus(title, text, isError) {
           statusTitle.textContent = title;
@@ -620,7 +624,7 @@
             '<a-light type="directional" intensity="1.1" position="0 1 1"></a-light>',
             '<a-light type="point" intensity="0.65" position="0 1.4 -0.4" color="#7dffd6"></a-light>',
             '<a-marker preset="hiro">',
-            '  <a-entity id="marker-text" extruded-text="value: ' + value + '; size: ' + textSize + '; height: 0.09; color: #ffb86c" position="0 0.24 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 8500; easing: linear"></a-entity>',
+            '  <a-entity id="marker-text" extruded-text="value: ' + value + '; size: ' + textSize + '; depth: 0.09; color: #ffb86c" position="0 0.24 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 8500; easing: linear"></a-entity>',
             '  <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="0.34" radius-outer="0.43" color="#7dffd6" material="opacity: 0.95"></a-ring>',
             '  <a-cylinder position="0 0.03 0" radius="0.09" height="0.05" color="#10212b" material="metalness: 0.3; roughness: 0.5"></a-cylinder>',
             '  <a-box position="0 0.11 0" depth="0.12" height="0.12" width="0.12" rotation="20 35 0" color="#7dffd6" material="opacity: 0.18"></a-box>',
@@ -647,7 +651,7 @@
 
         function resolveLaunchText() {
           const inputValue = textInput.value.trim();
-          if (inputValue) {
+          if (hasManualOverride && inputValue) {
             return {
               text: sanitizeText(inputValue),
               source: "手動入力"
@@ -656,7 +660,7 @@
 
           return {
             text: defaultText,
-            source: params.get("text") ? "URLパラメータ" : "既定値"
+            source: paramText ? "URLパラメータ" : "既定値"
           };
         }
 
@@ -681,10 +685,11 @@
 
         previewText.textContent = defaultText;
         launchText.textContent = defaultText;
-        textInput.value = params.get("text") ? defaultText : "";
+        textInput.value = paramText ? defaultText : "";
         setStatus("準備完了", "ARを開始するとカメラが起動し、Hiroマーカー上に立体文字を表示します。", false);
 
         textInput.addEventListener("input", function () {
+          hasManualOverride = textInput.value.trim().length > 0 && sanitizeText(textInput.value) !== defaultText;
           const nextText = sanitizeText(textInput.value || defaultText);
           previewText.textContent = nextText;
           launchText.textContent = nextText;

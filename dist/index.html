@@ -85,7 +85,15 @@
       renderer="alpha: true; antialias: true; precision: mediump"
       arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
     >
-      <a-marker type="pattern" url="assets/patt.hiro" emitevents="true">
+      <a-marker
+        type="pattern"
+        url="assets/patt.hiro"
+        emitevents="true"
+        smooth="true"
+        smoothCount="15"
+        smoothTolerance="0.01"
+        smoothThreshold="5"
+      >
         <a-plane
           position="0 0.001 0"
           rotation="-90 0 0"
@@ -109,7 +117,6 @@
           position="0 0.09 0"
           scale="-10 -10 10"
           rotation="-90 180 0"
-          animation="property: position; from: 0 0.09 0; to: 0 0.42 0; dur: 1200; easing: easeOutCubic; loop: false; startEvents: markerFound"
         ></a-entity>
       </a-marker>
       <a-entity camera></a-entity>

@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QR Marker AR 3D Text</title>
+    <title>Marker AR 3D Text</title>
     <meta
       name="description"
-      content="QRコードを読み取ったあと、Hiroマーカー上に立体文字を表示するGitHub Pages向けWeb ARデモ"
+      content="スマホでサイトを開き、Hiroマーカー上に立体文字を表示するGitHub Pages向けWeb ARデモ"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -105,7 +105,7 @@
       }
 
       .hero,
-      .scanner-card {
+      .launch-card {
         padding: 28px;
       }
 
@@ -178,69 +178,84 @@
         line-height: 1.6;
       }
 
-      .scanner-card {
+      .launch-card {
         background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
         border-left: 1px solid rgba(125, 255, 214, 0.12);
       }
 
-      .scanner-wrap {
+      .preview-card {
         position: relative;
-        aspect-ratio: 3 / 4;
+        min-height: 420px;
         border-radius: 24px;
         overflow: hidden;
-        background: #02060b;
         border: 1px solid rgba(125, 255, 214, 0.16);
+        background:
+          radial-gradient(circle at top, rgba(125, 255, 214, 0.12), transparent 35%),
+          linear-gradient(180deg, rgba(2, 10, 18, 0.95), rgba(3, 6, 12, 1));
       }
 
-      #scanner-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        transform: scaleX(-1);
-      }
-
-      .scanner-grid {
+      .preview-card::before {
+        content: "";
         position: absolute;
         inset: 0;
         background-image:
           linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
           linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
         background-size: 28px 28px;
-        pointer-events: none;
+        opacity: 0.5;
       }
 
-      .scanner-focus {
-        position: absolute;
-        inset: 18% 12%;
-        border: 2px solid rgba(125, 255, 214, 0.72);
-        border-radius: 24px;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      .preview-copy {
+        position: relative;
+        z-index: 1;
+        padding: 28px;
+        display: grid;
+        gap: 16px;
+        align-content: center;
+        min-height: 420px;
       }
 
-      .scanner-focus::before,
-      .scanner-focus::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(255, 184, 108, 0.95), transparent);
-        animation: sweep 2.2s linear infinite;
+      .preview-badge {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(125, 255, 214, 0.12);
+        border: 1px solid rgba(125, 255, 214, 0.24);
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
-      .scanner-focus::after {
-        animation-delay: 1.1s;
+      .preview-copy h2 {
+        margin: 0;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(36px, 7vw, 64px);
+        line-height: 0.94;
+        letter-spacing: 0.04em;
       }
 
-      @keyframes sweep {
-        from {
-          top: 8%;
-        }
+      .preview-copy p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
 
-        to {
-          top: 88%;
-        }
+      .param-note {
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .param-note strong {
+        color: var(--accent);
       }
 
       .status {
@@ -442,7 +457,6 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/loaders/FontLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/geometries/TextGeometry.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script>
       AFRAME.registerComponent("extruded-text", {
         schema: {
@@ -502,28 +516,24 @@
       });
 
       document.addEventListener("DOMContentLoaded", function () {
+        const params = new URLSearchParams(window.location.search);
         const launcher = document.getElementById("launcher");
         const arStage = document.getElementById("ar-stage");
-        const scannerVideo = document.getElementById("scanner-video");
         const statusBox = document.getElementById("status-box");
         const statusTitle = document.getElementById("status-title");
         const statusText = document.getElementById("status-text");
-        const scanButton = document.getElementById("scan-button");
-        const manualButton = document.getElementById("manual-button");
-        const retryButton = document.getElementById("retry-button");
+        const launchButton = document.getElementById("launch-button");
+        const restartButton = document.getElementById("restart-button");
         const backButton = document.getElementById("back-button");
         const textInput = document.getElementById("text-input");
         const sceneSlot = document.getElementById("ar-scene-slot");
         const activeText = document.getElementById("active-text");
-        const activeQr = document.getElementById("active-qr");
+        const activeSource = document.getElementById("active-source");
+        const previewText = document.getElementById("preview-text");
+        const launchText = document.getElementById("launch-text");
         const markerStatus = document.getElementById("marker-status");
         const markerHint = document.getElementById("marker-hint");
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d", { willReadFrequently: true });
-
-        let scannerStream = null;
-        let scannerFrame = 0;
-        let scannerActive = false;
+        const defaultText = sanitizeText(params.get("text") || textInput.value || "YAMAMOTO");
 
         function setStatus(title, text, isError) {
           statusTitle.textContent = title;
@@ -575,23 +585,6 @@
           return 0.15;
         }
 
-        function stopScanner() {
-          scannerActive = false;
-          if (scannerFrame) {
-            cancelAnimationFrame(scannerFrame);
-            scannerFrame = 0;
-          }
-
-          if (scannerStream) {
-            scannerStream.getTracks().forEach(function (track) {
-              track.stop();
-            });
-            scannerStream = null;
-          }
-
-          scannerVideo.srcObject = null;
-        }
-
         function resetArScene() {
           while (sceneSlot.firstChild) {
             sceneSlot.firstChild.remove();
@@ -638,104 +631,66 @@
           return scene;
         }
 
-        function startArExperience(sourceValue, rawValue) {
-          stopScanner();
+        function startArExperience(sourceValue, sourceLabel) {
           resetArScene();
 
           const textValue = sanitizeText(sourceValue);
           activeText.textContent = textValue;
-          activeQr.textContent = rawValue ? rawValue.slice(0, 60) : "手動入力";
+          activeSource.textContent = sourceLabel;
           markerStatus.textContent = "マーカー待機中";
-          markerHint.textContent = "Hiroマーカーを映すと、読み取った内容の立体文字が表示されます。";
+          markerHint.textContent = "Hiroマーカーを映すと、設定した文字の立体表示が始まります。";
 
           sceneSlot.appendChild(createArScene(textValue));
           launcher.classList.add("hidden");
           arStage.classList.remove("hidden");
         }
 
-        function handleScanSuccess(decodedValue) {
-          const textValue = sanitizeText(decodedValue);
-          setStatus("QRを認識しました", "このあとHiroマーカーに " + textValue + " を立体表示します。", false);
-          startArExperience(textValue, decodedValue);
+        function resolveLaunchText() {
+          const inputValue = textInput.value.trim();
+          if (inputValue) {
+            return {
+              text: sanitizeText(inputValue),
+              source: "手動入力"
+            };
+          }
+
+          return {
+            text: defaultText,
+            source: params.get("text") ? "URLパラメータ" : "既定値"
+          };
         }
 
-        function scanLoop() {
-          if (!scannerActive) {
-            return;
-          }
-
-          if (scannerVideo.readyState >= 2) {
-            canvas.width = scannerVideo.videoWidth;
-            canvas.height = scannerVideo.videoHeight;
-            context.drawImage(scannerVideo, 0, 0, canvas.width, canvas.height);
-            const image = context.getImageData(0, 0, canvas.width, canvas.height);
-            const result = jsQR(image.data, image.width, image.height, {
-              inversionAttempts: "dontInvert"
-            });
-
-            if (result && result.data) {
-              handleScanSuccess(result.data);
-              return;
-            }
-          }
-
-          scannerFrame = requestAnimationFrame(scanLoop);
-        }
-
-        async function startScanner() {
-          stopScanner();
-          setStatus("QR待機中", "カメラにQRコードを近づけてください。読み取った内容を立体文字に使います。", false);
-
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setStatus("カメラ利用不可", "このブラウザではカメラAPIが使えません。下の入力欄から直接文字を指定してください。", true);
-            return;
-          }
-
-          try {
-            scannerStream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: { ideal: "environment" },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-              },
-              audio: false
-            });
-            scannerVideo.srcObject = scannerStream;
-            await scannerVideo.play();
-            scannerActive = true;
-            scanLoop();
-          } catch (error) {
-            setStatus("カメラ起動失敗", "権限が拒否されたか、別アプリがカメラを使用中です。手動入力に切り替えてください。", true);
-          }
-        }
-
-        scanButton.addEventListener("click", function () {
-          startScanner();
+        launchButton.addEventListener("click", function () {
+          const launchState = resolveLaunchText();
+          startArExperience(launchState.text, launchState.source);
         });
 
-        manualButton.addEventListener("click", function () {
-          const textValue = sanitizeText(textInput.value || "AR TEXT");
-          startArExperience(textValue, "手動入力");
-        });
-
-        retryButton.addEventListener("click", function () {
+        restartButton.addEventListener("click", function () {
           arStage.classList.add("hidden");
           launcher.classList.remove("hidden");
           resetArScene();
-          startScanner();
+          setStatus("準備完了", "ARを開始するとカメラが起動し、Hiroマーカー上に立体文字を表示します。", false);
         });
 
         backButton.addEventListener("click", function () {
           arStage.classList.add("hidden");
           launcher.classList.remove("hidden");
           resetArScene();
-          setStatus("待機中", "QRスキャンを開始すると、この画面からAR表示へ進みます。", false);
+          setStatus("準備完了", "ARを開始するとカメラが起動し、Hiroマーカー上に立体文字を表示します。", false);
         });
 
-        window.addEventListener("beforeunload", function () {
-          stopScanner();
-          resetArScene();
+        previewText.textContent = defaultText;
+        launchText.textContent = defaultText;
+        textInput.value = params.get("text") ? defaultText : "";
+        setStatus("準備完了", "ARを開始するとカメラが起動し、Hiroマーカー上に立体文字を表示します。", false);
+
+        textInput.addEventListener("input", function () {
+          const nextText = sanitizeText(textInput.value || defaultText);
+          previewText.textContent = nextText;
+          launchText.textContent = nextText;
         });
+
+        window.addEventListener("beforeunload", resetArScene);
       });
     </script>
   </head>
@@ -744,50 +699,64 @@
       <main id="launcher" class="launcher">
         <section class="panel">
           <div class="hero">
-            <span class="eyebrow">QR to Marker AR</span>
-            <h1>SCAN<br />MARKER<br />FLOAT</h1>
+            <span class="eyebrow">Site QR to Marker AR</span>
+            <h1>OPEN<br />MARKER<br />FLOAT</h1>
             <p>
-              まずQRコードを読み取り、その内容をHiroマーカー上の立体文字として表示します。
-              GitHub Pagesにそのまま載せられる、単一HTMLのWeb ARデモです。
+              スマホで配布用QRからこのサイトを開き、AR開始後にHiroマーカーを映すと立体文字が表示されます。
+              アプリ内で追加のQR読み取りはしません。
             </p>
             <ol class="steps">
               <li>
                 <div class="step-num">1</div>
                 <div class="step-copy">
-                  <strong>QRコードをスキャン</strong>
-                  <span>QRの文字列をそのまま3Dテキストとして使います。英数字の短い文字列が安定です。</span>
+                  <strong>配布用QRからサイトを開く</strong>
+                  <span>URLに text パラメータが付いていれば、その文字をAR表示に使います。</span>
                 </div>
               </li>
               <li>
                 <div class="step-num">2</div>
                 <div class="step-copy">
+                  <strong>ARを開始する</strong>
+                  <span>カメラを許可すると、マーカー検出の準備が始まります。</span>
+                </div>
+              </li>
+              <li>
+                <div class="step-num">3</div>
+                <div class="step-copy">
                   <strong>Hiroマーカーを映す</strong>
-                  <span>マーカーを検出すると、読み取った内容が空間に浮いた立体文字として回転表示されます。</span>
+                  <span>マーカーを検出すると、設定した文字が空間に浮いた立体文字として回転表示されます。</span>
                 </div>
               </li>
             </ol>
           </div>
 
-          <div class="scanner-card">
-            <div class="scanner-wrap">
-              <video id="scanner-video" autoplay playsinline muted></video>
-              <div class="scanner-grid"></div>
-              <div class="scanner-focus"></div>
+          <div class="launch-card">
+            <div class="preview-card">
+              <div class="preview-copy">
+                <span class="preview-badge">Ready For Camera AR</span>
+                <h2><span id="preview-text">YAMAMOTO</span></h2>
+                <p>
+                  URLで文字を渡す場合は、末尾に ?text=HELLO を付けて配布してください。未指定時は既定値を表示します。
+                </p>
+                <div class="param-note">
+                  <strong>表示文字:</strong>
+                  <span id="launch-text">YAMAMOTO</span>
+                </div>
+              </div>
             </div>
 
             <div id="status-box" class="status">
-              <strong id="status-title">待機中</strong>
-              <div id="status-text">QRスキャンを開始すると、この画面からAR表示へ進みます。</div>
+              <strong id="status-title">準備完了</strong>
+              <div id="status-text">ARを開始するとカメラが起動し、Hiroマーカー上に立体文字を表示します。</div>
             </div>
 
             <div class="controls">
               <div class="button-row">
-                <button id="scan-button" class="primary" type="button">QRスキャンを開始</button>
-                <button id="manual-button" class="secondary" type="button">手動入力でARを開始</button>
+                <button id="launch-button" class="primary" type="button">ARを開始</button>
               </div>
 
               <div class="input-row">
-                <label for="text-input">QRが使えない場合の文字入力</label>
+                <label for="text-input">表示文字を上書きする場合</label>
                 <input id="text-input" type="text" maxlength="18" placeholder="例: YAMAMOTO" />
               </div>
             </div>
@@ -803,16 +772,16 @@
         <div class="ar-hud">
           <div class="ar-hud-card">
             <h2>Marker AR 立体文字</h2>
-            <p id="marker-hint">Hiroマーカーを映すと、読み取った内容の立体文字が表示されます。</p>
+            <p id="marker-hint">Hiroマーカーを映すと、設定した文字の立体表示が始まります。</p>
             <div class="tag-row">
               <span class="tag">Text: <span id="active-text">AR TEXT</span></span>
-              <span class="tag">Source: <span id="active-qr">未設定</span></span>
+              <span class="tag">Source: <span id="active-source">未設定</span></span>
               <span id="marker-status" class="tag">マーカー待機中</span>
             </div>
           </div>
 
           <div class="ar-actions">
-            <button id="retry-button" class="primary" type="button">別のQRを読む</button>
+            <button id="restart-button" class="primary" type="button">文字を変更する</button>
             <button id="back-button" class="secondary" type="button">開始画面へ戻る</button>
           </div>
         </div>

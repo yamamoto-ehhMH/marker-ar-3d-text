@@ -362,7 +362,11 @@
         inset: 0;
         min-height: 100vh;
         z-index: 5;
-        background: #000;
+        background: transparent;
+      }
+
+      body.ar-active .shell {
+        z-index: 0;
       }
 
       .ar-hud {
@@ -445,7 +449,8 @@
         position: fixed;
         inset: 0;
         min-height: 100vh;
-        background: #000;
+        background: transparent;
+        z-index: 1;
       }
 
       #ar-scene-slot > a-scene {
@@ -453,6 +458,29 @@
         inset: 0;
         width: 100vw !important;
         height: 100vh !important;
+        background: transparent !important;
+        z-index: 2;
+      }
+
+      video,
+      .arjs-video,
+      #arjs-video {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        object-fit: cover !important;
+        background: transparent !important;
+        z-index: 0 !important;
+      }
+
+      .a-canvas {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: transparent !important;
+        z-index: 1 !important;
       }
 
       .a-enter-vr-button {
@@ -655,8 +683,9 @@
           const textSize = computeTextSize(value);
           scene.setAttribute("embedded", "");
           scene.setAttribute("vr-mode-ui", "enabled: false");
-          scene.setAttribute("renderer", "logarithmicDepthBuffer: true; precision: mediump; colorManagement: true;");
+          scene.setAttribute("renderer", "alpha: true; logarithmicDepthBuffer: true; precision: mediump; colorManagement: true;");
           scene.setAttribute("arjs", "trackingMethod: best; sourceType: webcam; debugUIEnabled: false;");
+          scene.setAttribute("style", "background: transparent;");
           scene.innerHTML = [
             '<a-light type="ambient" intensity="0.9"></a-light>',
             '<a-light type="directional" intensity="1.1" position="0 1 1"></a-light>',

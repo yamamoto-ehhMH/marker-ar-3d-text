@@ -2,14 +2,18 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Simple Hiro Marker AR</title>
     <style>
+      :root {
+        --app-h: 100dvh;
+      }
+
       html,
       body {
         margin: 0;
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: var(--app-h);
         overflow: hidden;
         background: #000;
       }
@@ -32,8 +36,12 @@
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        width: 100% !important;
+        height: var(--app-h) !important;
+        min-width: 100% !important;
+        min-height: var(--app-h) !important;
+        max-width: none !important;
+        max-height: none !important;
       }
 
       video,
@@ -50,6 +58,7 @@
       canvas {
         background: transparent !important;
         z-index: 1 !important;
+        display: block !important;
       }
     </style>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -98,6 +107,41 @@
             this.el.object3D.position.y = this.data.yOffset;
           });
         }
+      });
+
+      function syncViewportSize() {
+        const width = Math.max(window.innerWidth || 1, 1);
+        const height = Math.max(window.innerHeight || 1, 1);
+        document.documentElement.style.setProperty("--app-h", height + "px");
+
+        const targets = document.querySelectorAll(
+          "video, .arjs-video, #arjs-video, .a-canvas, a-scene, canvas"
+        );
+        targets.forEach((el) => {
+          el.style.width = width + "px";
+          el.style.height = height + "px";
+          el.style.minWidth = width + "px";
+          el.style.minHeight = height + "px";
+          el.style.left = "0px";
+          el.style.top = "0px";
+        });
+      }
+
+      window.addEventListener("resize", () => {
+        syncViewportSize();
+        setTimeout(syncViewportSize, 120);
+      }, { passive: true });
+
+      window.addEventListener("orientationchange", () => {
+        syncViewportSize();
+        setTimeout(syncViewportSize, 250);
+        setTimeout(syncViewportSize, 700);
+      }, { passive: true });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        syncViewportSize();
+        setTimeout(syncViewportSize, 150);
+        setTimeout(syncViewportSize, 500);
       });
     </script>
   </head>

@@ -599,8 +599,8 @@
       AFRAME.registerComponent("extruded-text", {
         schema: {
           value: { type: "string", default: "AR TEXT" },
-          size: { type: "number", default: 0.22 },
-          depth: { type: "number", default: 0.08 },
+          size: { type: "number", default: 0.44 },
+          depth: { type: "number", default: 0.12 },
           color: { type: "color", default: "#ffb86c" }
         },
         init: function () {
@@ -613,7 +613,7 @@
         renderText: function () {
           const data = this.data;
           const el = this.el;
-          const layerCount = 10;
+          const layerCount = 12;
           const layerDepth = data.depth / layerCount;
           const safeValue = data.value.replace(/;/g, "").trim() || "AR TEXT";
 
@@ -639,7 +639,7 @@
           texture.magFilter = THREE.LinearFilter;
 
           const aspect = canvas.width / canvas.height;
-          const textHeight = data.size * 1.35;
+          const textHeight = data.size * 1.55;
           const textWidth = textHeight * aspect;
           const geometry = new THREE.PlaneGeometry(textWidth, textHeight);
           const group = new THREE.Group();
@@ -668,7 +668,7 @@
             side: THREE.DoubleSide,
             depthWrite: false
           });
-          const glow = new THREE.Mesh(new THREE.PlaneGeometry(textWidth * 1.04, textHeight * 1.14), glowMaterial);
+          const glow = new THREE.Mesh(new THREE.PlaneGeometry(textWidth * 1.06, textHeight * 1.18), glowMaterial);
           glow.position.set(0, 0, -data.depth - 0.012);
           group.add(glow);
 
@@ -749,18 +749,18 @@
         function computeTextSize(value) {
           const length = value.length;
           if (length <= 6) {
-            return 0.26;
+            return 0.52;
           }
 
           if (length <= 10) {
-            return 0.22;
+            return 0.44;
           }
 
           if (length <= 14) {
-            return 0.18;
+            return 0.36;
           }
 
-          return 0.15;
+          return 0.3;
         }
 
         function resetArScene() {
@@ -806,11 +806,7 @@
             '<a-light type="directional" intensity="1.1" position="0 1 1"></a-light>',
             '<a-light type="point" intensity="0.65" position="0 1.4 -0.4" color="#7dffd6"></a-light>',
             '<a-marker type="pattern" url="assets/patt.hiro" emitevents="true" smooth="true" smoothCount="8" smoothTolerance="0.01" smoothThreshold="2">',
-            '  <a-plane position="0 0.01 0" rotation="-90 0 0" width="1" height="1" color="#7dffd6" material="opacity: 0.12; side: double"></a-plane>',
-            '  <a-entity id="marker-text" extruded-text="value: ' + value + '; size: ' + textSize + '; depth: 0.09; color: #ffb86c" position="0 0.28 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 8500; easing: linear"></a-entity>',
-            '  <a-ring position="0 0.02 0" rotation="-90 0 0" radius-inner="0.34" radius-outer="0.43" color="#7dffd6" material="opacity: 0.95"></a-ring>',
-            '  <a-cylinder position="0 0.04 0" radius="0.09" height="0.08" color="#10212b" material="metalness: 0.3; roughness: 0.5"></a-cylinder>',
-            '  <a-box position="0 0.14 0" depth="0.16" height="0.16" width="0.16" rotation="20 35 0" color="#7dffd6" material="opacity: 0.24"></a-box>',
+            '  <a-entity id="marker-text" extruded-text="value: ' + value + '; size: ' + textSize + '; depth: 0.12; color: #ffb86c" position="0 0.46 0" rotation="0 0 0"></a-entity>',
             '</a-marker>',
             '<a-entity camera></a-entity>'
           ].join("");

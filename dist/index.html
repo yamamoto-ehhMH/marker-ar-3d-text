@@ -5,11 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Hiro Marker AR</title>
     <style>
+      :root {
+        --app-w: 100vw;
+        --app-h: 100dvh;
+      }
+
       html,
       body {
         margin: 0;
-        width: 100%;
-        height: 100%;
+        width: var(--app-w);
+        height: var(--app-h);
+        position: fixed;
+        inset: 0;
         overflow: hidden;
         background: #000;
       }
@@ -22,17 +29,22 @@
       .arjs-video,
       #arjs-video,
       .a-canvas,
-      a-scene {
+      a-scene,
+      canvas {
         position: fixed !important;
-        inset: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: var(--app-w) !important;
+        height: var(--app-h) !important;
+        min-width: var(--app-w) !important;
+        min-height: var(--app-h) !important;
       }
 
       video,
       .arjs-video,
       #arjs-video {
         object-fit: cover !important;
+        object-position: center center !important;
         z-index: 0 !important;
       }
 
@@ -88,6 +100,33 @@
             this.el.object3D.position.y = this.data.yOffset;
           });
         }
+      });
+
+      function forceArFullscreen() {
+        const width = Math.max(window.innerWidth || 0, 1);
+        const height = Math.max(window.innerHeight || 0, 1);
+        document.documentElement.style.setProperty("--app-w", width + "px");
+        document.documentElement.style.setProperty("--app-h", height + "px");
+
+        const elements = document.querySelectorAll(
+          "video, .arjs-video, #arjs-video, .a-canvas, a-scene, canvas"
+        );
+        elements.forEach((el) => {
+          el.style.width = width + "px";
+          el.style.height = height + "px";
+          el.style.minWidth = width + "px";
+          el.style.minHeight = height + "px";
+          el.style.left = "0px";
+          el.style.top = "0px";
+        });
+      }
+
+      window.addEventListener("resize", forceArFullscreen, { passive: true });
+      window.addEventListener("orientationchange", forceArFullscreen, { passive: true });
+      document.addEventListener("DOMContentLoaded", () => {
+        forceArFullscreen();
+        setTimeout(forceArFullscreen, 150);
+        setTimeout(forceArFullscreen, 500);
       });
     </script>
   </head>

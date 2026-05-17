@@ -44,6 +44,16 @@
         font-family: "Zen Kaku Gothic New", sans-serif;
       }
 
+      body.ar-active {
+        background: #000;
+        overflow: hidden;
+      }
+
+      body.ar-active::before,
+      body.ar-active::after {
+        display: none;
+      }
+
       body::before,
       body::after {
         content: "";
@@ -348,8 +358,11 @@
       }
 
       .ar-stage {
-        position: relative;
+        position: fixed;
+        inset: 0;
         min-height: 100vh;
+        z-index: 5;
+        background: #000;
       }
 
       .ar-hud {
@@ -418,7 +431,17 @@
       }
 
       #ar-scene-slot {
+        position: fixed;
+        inset: 0;
         min-height: 100vh;
+        background: #000;
+      }
+
+      #ar-scene-slot > a-scene {
+        position: fixed !important;
+        inset: 0;
+        width: 100vw !important;
+        height: 100vh !important;
       }
 
       .a-enter-vr-button {
@@ -645,6 +668,7 @@
           markerHint.textContent = "Hiroマーカーを映すと、設定した文字の立体表示が始まります。";
 
           sceneSlot.appendChild(createArScene(textValue));
+          document.body.classList.add("ar-active");
           launcher.classList.add("hidden");
           arStage.classList.remove("hidden");
         }
@@ -670,6 +694,7 @@
         });
 
         restartButton.addEventListener("click", function () {
+          document.body.classList.remove("ar-active");
           arStage.classList.add("hidden");
           launcher.classList.remove("hidden");
           resetArScene();
@@ -677,6 +702,7 @@
         });
 
         backButton.addEventListener("click", function () {
+          document.body.classList.remove("ar-active");
           arStage.classList.add("hidden");
           launcher.classList.remove("hidden");
           resetArScene();
